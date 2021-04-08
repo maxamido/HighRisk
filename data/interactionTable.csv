@@ -1,0 +1,15 @@
+CurrentState,KeyTyped,KeyCode,MouseEvent,ClickableName,MapDirection,NextState
+Start,,,mouseReleased,,,Instruction
+Instruction,,,mouseReleased,,,MaxsRoom
+MaxsRoom,,,,,W,Hallway
+Hallway,,,,,W,ParentsRoom
+Hallway,,,,,E,MaxsRoom
+Hallway,,,,,N,LivingRoom
+Hallway,,,,,S,GirlsRoom
+GirlsRoom,,,,,N,Hallway
+ParentsRoom,,,,,E,Hallway
+LivingRoom,,,,,S,Hallway
+LivingRoom,,,,,W,Kitchen
+TVRoom,,,,,E,Kitchen
+Kitchen,,,,,W,TVRoom
+Kitchen,,,,,E,LivingRoom

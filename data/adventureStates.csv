@@ -1,0 +1,10 @@
+ID,StateName,ClassName,PNGFilename,CollisionFilename
+0,Start,PNGRoom,assets/rooms_Splash.png,
+1,Instruction,PNGRoom,assets/rooms_Instructions.png,
+2,MaxsRoom,PNGRoom,assets/rooms_Max's Room.png,
+3,Hallway,PNGRoom,assets/rooms_Hallway.png,
+4,GirlsRoom,PNGRoom,assets/rooms_Girls Room.png,
+5,ParentsRoom,PNGRoom,assets/rooms_Parents Room.png,
+6,LivingRoom,PNGRoom,assets/rooms_Living Room.png,
+7,TVRoom,PNGRoom,assets/rooms_TV Room.png,
+8,Kitchen,PNGRoom,assets/rooms_Kitchen.png,
