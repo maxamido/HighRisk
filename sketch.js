@@ -22,6 +22,11 @@ var playerAnimation;
 var clickablesManager;    // the manager class
 var clickables;           // an array of clickable objects
 
+// NPC talking global variables
+var talkedToWeirdNPC = false;
+var talkedToBearNPC = false;
+
+
 // indexes into the clickable array (constants)
 const playGameIndex = 0;
 
@@ -29,7 +34,7 @@ const playGameIndex = 0;
 function preload() {
   clickablesManager = new ClickableManager('data/clickableLayout.csv');
   adventureManager = new AdventureManager('data/adventureStates.csv', 'data/interactionTable.csv', 'data/clickableLayout.csv');
-  animation = loadAnimation('assets/avatars/max_run_1.png', 'assets/avatars/max_run_3.png'); 
+  animation = loadAnimation('assets/avatars/max_1.png', 'assets/avatars/max_3.png'); 
 }
 
 // Setup the adventure manager
@@ -72,7 +77,23 @@ function draw() {
 
   // No avatar for Splash screen or Instructions screen
   if( adventureManager.getStateName() !== "Start" && 
-      adventureManager.getStateName() !== "Instruction" ) {
+      adventureManager.getStateName() !== "Instruction" &&
+      adventureManager.getStateName() !== "Intro" &&
+      adventureManager.getStateName() !== "Trans1" &&
+      adventureManager.getStateName() !== "Trans1cont" &&
+      adventureManager.getStateName() !== "Trans2" &&
+      adventureManager.getStateName() !== "Trans3"  &&
+      adventureManager.getStateName() !== "ZoomBreak" &&
+      adventureManager.getStateName() !== "ZoomBreak2" &&
+      adventureManager.getStateName() !== "ZoomBreak3" &&
+      adventureManager.getStateName() !== "ZoomBreak4" &&
+      adventureManager.getStateName() !== "Trans4"  &&
+      adventureManager.getStateName() !== "Trans5"  &&
+      adventureManager.getStateName() !== "Trans6"  &&
+      adventureManager.getStateName() !== "ZoomEulogy"  &&
+      adventureManager.getStateName() !== "ZoomEulogy2"  &&
+      adventureManager.getStateName() !== "End"  &&
+      adventureManager.getStateName() !== "End2") {
       
     // responds to keydowns
     moveSprite();
@@ -167,6 +188,31 @@ clickableButtonPressed = function() {
   adventureManager.clickablePressed(this.name); 
 }
 
+// code to check if NPC was talked to, if false, sets to true
+function talkToWeirdy() {
+    if (talkedToWeirdNPC === false) {
+        print("turning them on");
+        talkedToWeirdNPC = true;
+        print("talked to weidy");
+    }
+}
+
+// code to check if NPC was talked to, if false, sets to true
+function talkToBear() {
+    if (talkedToBearNPC === false) {
+        print("turning them on");
+
+        //    // turn on visibility for buttons
+        //    for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //      clickables[i].visible = true;
+        //    }
+
+        talkedToBearNPC = true;
+        print("talked to Bear");
+    }
+}
+
+
 
 
 //-------------- SUBCLASSES / YOUR DRAW CODE CAN GO HERE ---------------//
@@ -175,35 +221,4130 @@ clickableButtonPressed = function() {
 // Instructions screen has a backgrounnd image, loaded from the adventureStates table
 // It is sublcassed from PNGRoom, which means all the loading, unloading and drawing of that
 // class can be used. We call super() to call the super class's function as needed
-class InstructionsScreen extends PNGRoom {
-  // preload is where we define OUR variables
-  // Best not to use constructor() functions for sublcasses of PNGRoom
-  // AdventureManager calls preload() one time, during startup
-  preload() {
-    // These are out variables in the InstructionsScreen class
-    this.textBoxWidth = (width/6)*4;
-    this.textBoxHeight = (height/6)*4; 
+class GirlsRoom1 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
 
-    // hard-coded, but this could be loaded from a file if we wanted to be more elegant
-    this.instructionsText = "You are navigating through the interior space of your moods. There is no goal to this game, but just a chance to explore various things that might be going on in your head. Use the ARROW keys to navigate your avatar around.";
-  }
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
 
-  // call the PNGRoom superclass's draw function to draw the background image
-  // and draw our instructions on top of this
-  draw() {
-    // tint down background image so text is more readable
-    tint(128);
-      
-    // this calls PNGRoom.draw()
-    super.draw();
-      
-    // text draw settings
-    fill(255);
-    textAlign(CENTER);
-    textSize(30);
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
 
-    // Draw text in a box
-    text(this.instructionsText, width/6, height/6, this.textBoxWidth, this.textBoxHeight );
-  }
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom1.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom1 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom1.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class Kitchen1 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen1.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom1 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom1.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom1 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom1.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+//
+// NEW SET OF INTERACTIONS
+//
+class GirlsRoom2 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom2.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class LivingRoom2 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_LivingRoom2.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+class LivingRoom2Done extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_LivingRoom2Done.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+
+class Kitchen2 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen2.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom2 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom2.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom2 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom2.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+
+//
+// NEW SET OF INTERACTIONS
+//
+
+class GirlsRoom3 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom3.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom3 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom3.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class Kitchen3 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen3.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom3 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom3.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom3 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom3.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+
+//
+// NEW SET OF INTERACTIONS
+//
+
+class GirlsRoom4 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom4.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom4 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom4.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class Kitchen4 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen4.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class MaxsRoom4 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom4.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+
+//
+// NEW SET OF INTERACTIONS
+//
+
+class LivingRoom5 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/family_family.png', 'assets/avatars/family_family.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_LivingRoom5.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class LivingRoom5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/family_family.png', 'assets/avatars/family_family.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_LivingRoom5Sleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+
+class MaxsRoom5 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom5.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+
+//
+// NEW SET OF INTERACTIONS
+//
+
+class GirlsRoom6 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom6 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class Kitchen6 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom6 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class GirlsRoom6Paint extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom6Paint extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom6Paint.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class Kitchen6Paint extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen6Paint.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom6Paint extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom6Paint.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxRoom6 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom6.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom6Painted extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 220, height / 2 + 150, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleepAfter.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+//
+// NEW SET OF INTERACTIONS
+//
+
+class GirlsRoom7 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoom7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 0);
+        }
+    }
+}
+
+class ParentsRoom7 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 2, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoom7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2, 50);
+        }
+    }
+}
+
+class Kitchen7 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 - 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_Kitchen7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/4 + 100, 50);
+        }
+    }
+}
+
+class TVRoom7 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoom7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxRoom7 extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 220, height / 2 + 150, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom7Free extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoom7.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, width/2 , 50);
+        }
+    }
+}
+
+//
+//
+// SLEEP STATES
+//
+//
+
+class TVRoom1Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+class TVRoom2Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class TVRoom3Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class TVRoom4Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class TVRoom5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/dad_1.png', 'assets/avatars/dad_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_TVRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class Kitchen1Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_KitchenSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+class Kitchen2Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_KitchenSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class Kitchen3Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_KitchenSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class Kitchen4Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_KitchenSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class Kitchen5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/ja_1.png', 'assets/avatars/ja_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_KitchenSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+
+class ParentsRoom1Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+class ParentsRoom2Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class ParentsRoom3Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class ParentsRoom4Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class ParentsRoom5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/mom_3.png', 'assets/avatars/mom_3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_ParentsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+
+class GirlsRoom1Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+class GirlsRoom2Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class GirlsRoom3Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class GirlsRoom4Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class GirlsRoom5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 100, height / 2 + 100, 100, 100);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/grace_1.png', 'assets/avatars/grace_1.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_GirlsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom1Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+class MaxsRoom2Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleep.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom3Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleepAfter.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom4Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleepAfter.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
+}
+
+class MaxsRoom5Sleep extends PNGRoom {
+    // preload() gets called once upon startup
+    // We load ONE animation and create 20 NPCs
+    // 
+    preload() {
+        // this is our image, we will load when we enter the room
+        this.talkBubble = null;
+        this.talkedToNPC = false; // only draw when we run into it
+        talkedToWeirdNPC = false;
+
+        // NPC position
+        this.drawX = width / 4 + 100;
+        this.drawY = height / 2 - 40;
+
+        // load the animation just one time
+        this.NPC1 = createSprite(width / 4 + 200, height / 2 - 93, 0, 0);
+        this.NPC1.addAnimation('regular', loadAnimation('assets/avatars/phone_Phone2.png', 'assets/avatars/phone_Phone3.png'));
+
+    }
+
+    load() {
+        // pass to superclass
+        super.load();
+
+        this.talkBubble = loadImage('assets/chat/bubble_MaxsRoomSleepAfter.png');
+
+        //      // turn off buttons
+        //      for( let i = answer1Index; i <= answer6Index; i++ ) {
+        //       clickables[i].visible = false;
+        //      }
+    }
+
+    // clears up memory
+    unload() {
+        super.unload();
+
+        this.talkBubble = null;
+        talkedToWeirdNPC = false;
+        print("unloading AHA room");
+    }
+
+    // pass draw function to superclass, then draw sprites, then check for overlap
+    draw() {
+        // PNG room draw
+        super.draw();
+
+        // draws all the sprites in the group
+        //this.weirdNPCSprite.draw();
+        drawSprite(this.NPC1)
+        //drawSprite(this.NPC2)
+        // draws all the sprites in the group - 
+        //drawSprites(this.weirdNPCgroup);//.draw();
+
+        // checks for overlap with ANY sprite in the group, if this happens
+        // talk() function gets called
+        playerSprite.overlap(this.NPC1, talkToWeirdy);
+
+
+        if (this.talkBubble !== null && talkedToWeirdNPC === true) {
+            image(this.talkBubble, 300, 50);
+        }
+    }
 }
 
